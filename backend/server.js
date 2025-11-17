@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const protectedRoutes = require('./routes/protected');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -17,15 +18,22 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// -- ROUTES --
+// mount API routes under /api
 app.use('/api/auth', authRoutes);
 app.use('/api', protectedRoutes);
 
-// Health check
+// root route for health/visibility
+app.get('/', (req, res) => {
+  res.send('Backend running — welcome!');
+});
+
+// Health check (existing)
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// Database connection test
+// Database connection test (existing)
 app.get('/api/test-db', async (req, res) => {
   try {
     const { PrismaClient } = require('@prisma/client');
@@ -34,8 +42,8 @@ app.get('/api/test-db', async (req, res) => {
     await prisma.$disconnect();
     res.json({ status: 'OK', message: 'Database connection successful' });
   } catch (error) {
-    res.status(500).json({ 
-      status: 'ERROR', 
+    res.status(500).json({
+      status: 'ERROR',
       message: 'Database connection failed',
       error: error.message,
       code: error.code
@@ -43,7 +51,8 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
