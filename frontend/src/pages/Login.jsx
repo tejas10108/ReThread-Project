@@ -36,7 +36,20 @@ function Login() {
       window.dispatchEvent(new Event('authChange'))
       navigate('/')
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.')
+      console.error('Login error:', err)
+      console.error('Error response:', err.response)
+      
+      let errorMessage = 'Login failed. Please try again.'
+      
+      if (err.response) {
+        errorMessage = err.response.data?.error || err.response.data?.message || errorMessage
+      } else if (err.request) {
+        errorMessage = 'Unable to connect to server. Please check your connection.'
+      } else {
+        errorMessage = err.message || errorMessage
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

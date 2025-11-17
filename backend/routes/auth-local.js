@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const prisma = require('../utils/prisma');
+const localDB = require('../utils/localStorage');
 const { generateTokenPair } = require('../utils/token');
 
 const router = express.Router();
@@ -9,66 +9,33 @@ router.post('/signup', async (req, res) => {
   try {
     const { email, password, name, role } = req.body;
 
-    // Early validation - fail fast
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Email, password, and name are required' });
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    // Password length check
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters long' });
     }
 
-    let existingUser;
-    try {
-      existingUser = await prisma.user.findUnique({
-        where: { email },
-        select: { id: true } // Only select id for faster query
-      });
-    } catch (dbError) {
-      console.error('Database query error:', dbError);
-      return res.status(503).json({ 
-        error: 'Database connection failed. Please try again later.',
-        message: dbError.message 
-      });
-    }
-
+    const existingUser = localDB.findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Use fewer rounds in development for faster hashing (10 is production-safe)
-    const saltRounds = process.env.NODE_ENV === 'production' ? 10 : 8;
+    const saltRounds = 8;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    let user;
-    try {
-      user = await prisma.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          name,
-          role: role || 'buyer'
-        }
-      });
-    } catch (dbError) {
-      console.error('Database create error:', dbError);
-      // Check if it's a unique constraint violation
-      if (dbError.code === 'P2002') {
-        return res.status(400).json({ error: 'User with this email already exists' });
-      }
-      return res.status(503).json({ 
-        error: 'Database connection failed. Please try again later.',
-        message: dbError.message 
-      });
-    }
-
+    const user = localDB.createUser({
+      email,
+      password: hashedPassword,
+      name,
+      role: role || 'buyer'
+    });
     const { accessToken, refreshToken } = generateTokenPair({
       userId: user.id,
       email: user.email,
@@ -88,16 +55,9 @@ router.post('/signup', async (req, res) => {
     });
   } catch (error) {
     console.error('Signup error:', error);
-    console.error('Error details:', {
-      name: error.name,
-      code: error.code,
-      meta: error.meta,
-      message: error.message
-    });
     res.status(500).json({ 
       error: 'Internal server error',
-      message: error.message,
-      code: error.code
+      message: error.message
     });
   }
 });
@@ -110,9 +70,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
+    const user = localDB.findUserByEmail(email);
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -143,19 +101,21 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    console.error('Error details:', {
-      name: error.name,
-      code: error.code,
-      meta: error.meta,
-      message: error.message
-    });
     res.status(500).json({ 
       error: 'Internal server error',
-      message: error.message,
-      code: error.code
+      message: error.message
     });
   }
 });
 
-module.exports = router;
+if (process.env.NODE_ENV !== 'production') {
+  router.get('/debug/users', (req, res) => {
+    const users = localDB.getAllUsers();
+    res.json({ 
+      count: users.length,
+      users: users.map(u => ({ id: u.id, email: u.email, name: u.name, role: u.role }))
+    });
+  });
+}
 
+module.exports = router;

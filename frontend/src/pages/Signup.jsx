@@ -53,7 +53,23 @@ function Signup() {
       window.dispatchEvent(new Event('authChange'))
       navigate('/')
     } catch (err) {
-      setError(err.response?.data?.error || 'Signup failed. Please try again.')
+      console.error('Signup error:', err)
+      console.error('Error response:', err.response)
+      
+      let errorMessage = 'Signup failed. Please try again.'
+      
+      if (err.response) {
+        // Server responded with error
+        errorMessage = err.response.data?.error || err.response.data?.message || errorMessage
+      } else if (err.request) {
+        // Request was made but no response received
+        errorMessage = 'Unable to connect to server. Please check your connection.'
+      } else {
+        // Error setting up request
+        errorMessage = err.message || errorMessage
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

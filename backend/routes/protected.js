@@ -11,4 +11,3 @@ router.get('/protected-route', verifyToken, (req, res) => {
 });
 
 module.exports = router;
-
