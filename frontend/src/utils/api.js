@@ -1,10 +1,20 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+// Get API URL from environment variable
+let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001'
 
-if (import.meta.env.DEV) {
-  console.log('API Base URL:', API_URL)
+// Ensure API_URL ends with /api
+if (!API_URL.endsWith('/api')) {
+  // Remove trailing slash if present, then add /api
+  API_URL = API_URL.replace(/\/$/, '') + '/api'
 }
+
+// Log in both dev and production to help debug
+console.log('🔧 API Configuration:', {
+  'VITE_API_URL (raw)': import.meta.env.VITE_API_URL || 'NOT SET',
+  'Final API_URL': API_URL,
+  'Mode': import.meta.env.MODE
+})
 
 // Shorter timeout for localhost, longer for production
 const isLocalhost = API_URL.includes('localhost') || API_URL.includes('127.0.0.1')
