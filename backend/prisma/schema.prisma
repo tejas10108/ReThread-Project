@@ -19,6 +19,37 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  wishlistItems WishlistItem[]
+
   @@map("users")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  category    String   // upper, lower, accessories, footwear, winterwear, ethnic
+  condition   String   // New, Like New, Gently Used, Used, Fair
+  price       Float
+  images      String[] // Array of image URLs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  wishlistItems WishlistItem[]
+
+  @@map("products")
+}
+
+model WishlistItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
 }
 

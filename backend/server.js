@@ -8,6 +8,8 @@ const authRoutes = USE_LOCAL_STORAGE
   ? require('./routes/auth-local')
   : require('./routes/auth');
 const protectedRoutes = require('./routes/protected');
+const itemRoutes = require('./routes/items');
+const wishlistRoutes = require('./routes/wishlist');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -30,6 +32,8 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api', protectedRoutes);
+app.use('/api/items', itemRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 app.get('/', (req, res) => {
   res.send('Backend running — welcome!');
