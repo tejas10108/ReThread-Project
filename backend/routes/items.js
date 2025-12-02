@@ -14,24 +14,44 @@ router.get('/', verifyToken, async (req, res) => {
     const search = req.query.search || ''
     const category = req.query.category || ''
     const condition = req.query.condition || ''
-    const minPrice = parseFloat(req.query.minPrice) || 0
-    const maxPrice = parseFloat(req.query.maxPrice) || Infinity
+    const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice) : null
+    const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice) : null
     const sortBy = req.query.sortBy || 'createdAt'
     const sortOrder = req.query.sortOrder === 'asc' ? 'asc' : 'desc'
 
-    const where = {
-      AND: [
-        search ? {
-          OR: [
-            { title: { contains: search, mode: 'insensitive' } },
-            { description: { contains: search, mode: 'insensitive' } }
-          ]
-        } : {},
-        category ? { category } : {},
-        condition ? { condition } : {},
-        { price: { gte: minPrice, lte: maxPrice } }
-      ]
+    // Build price filter conditionally
+    const priceFilter = {}
+    if (minPrice !== null && !isNaN(minPrice)) {
+      priceFilter.gte = minPrice
     }
+    if (maxPrice !== null && !isNaN(maxPrice)) {
+      priceFilter.lte = maxPrice
+    }
+
+    const whereConditions = []
+    
+    if (search) {
+      whereConditions.push({
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } }
+        ]
+      })
+    }
+    
+    if (category) {
+      whereConditions.push({ category })
+    }
+    
+    if (condition) {
+      whereConditions.push({ condition })
+    }
+    
+    if (Object.keys(priceFilter).length > 0) {
+      whereConditions.push({ price: priceFilter })
+    }
+
+    const where = whereConditions.length > 0 ? { AND: whereConditions } : {}
 
     const [items, total] = await Promise.all([
       prisma.product.findMany({

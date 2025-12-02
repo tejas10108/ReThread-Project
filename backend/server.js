@@ -10,6 +10,7 @@ const authRoutes = USE_LOCAL_STORAGE
 const protectedRoutes = require('./routes/protected');
 const itemRoutes = require('./routes/items');
 const wishlistRoutes = require('./routes/wishlist');
+const cartRoutes = require('./routes/cart');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', protectedRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/cart', cartRoutes);
 
 app.get('/', (req, res) => {
   res.send('Backend running — welcome!');
