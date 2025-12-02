@@ -1,7 +1,19 @@
 import axios from 'axios'
 
-// Get API URL from environment variable
-let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001'
+// Get API URL from environment variable or auto-detect in production
+let API_URL = import.meta.env.VITE_API_URL
+
+// If not set, try to auto-detect based on current hostname
+if (!API_URL) {
+  const hostname = window.location.hostname
+  if (hostname.includes('vercel.app') || hostname.includes('re-thread')) {
+    // Production frontend - use production backend
+    API_URL = 'https://rethread-project.onrender.com'
+  } else {
+    // Local development
+    API_URL = 'http://localhost:5001'
+  }
+}
 
 // Ensure API_URL ends with /api
 if (!API_URL.endsWith('/api')) {
@@ -11,9 +23,10 @@ if (!API_URL.endsWith('/api')) {
 
 // Log in both dev and production to help debug
 console.log('🔧 API Configuration:', {
-  'VITE_API_URL (raw)': import.meta.env.VITE_API_URL || 'NOT SET',
+  'VITE_API_URL (raw)': import.meta.env.VITE_API_URL || 'NOT SET (auto-detected)',
   'Final API_URL': API_URL,
-  'Mode': import.meta.env.MODE
+  'Mode': import.meta.env.MODE,
+  'Hostname': window.location.hostname
 })
 
 // Shorter timeout for localhost, longer for production
@@ -39,6 +52,10 @@ api.interceptors.request.use((config) => {
   if (refreshToken) {
     config.headers['x-refresh-token'] = refreshToken
   }
+  
+  // Log the full URL being requested
+  const fullUrl = config.baseURL + config.url
+  console.log('🌐 Making request to:', fullUrl)
   
   return config
 })
