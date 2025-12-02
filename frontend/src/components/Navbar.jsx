@@ -48,6 +48,10 @@ function Navbar() {
           <Link to="/" className="nav-link">Home</Link>
           {user ? (
             <>
+              <Link to="/dashboard" className="nav-link">Dashboard</Link>
+              <Link to="/listings" className="nav-link">Listings</Link>
+              <Link to="/wishlist" className="nav-link">Wishlist</Link>
+              <Link to="/profile" className="nav-link">Profile</Link>
               <span className="nav-greeting">Hi, {getFirstName(user.name)}</span>
               <button onClick={handleLogout} className="nav-link nav-link-button">Logout</button>
             </>
