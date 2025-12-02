@@ -53,6 +53,16 @@ function Listings() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleAddToCart = async (productId) => {
+    try {
+      await api.post('/cart', { productId, quantity: 1 })
+      alert('Item added to cart!')
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      alert('Failed to add item to cart')
+    }
+  }
+
   return (
     <>
       <Navbar />
@@ -154,25 +164,35 @@ function Listings() {
               <>
                 <div className="items-grid">
                   {items.map(item => (
-                    <Link
-                      key={item.id}
-                      to={`/item/${item.id}`}
-                      className="item-card"
-                    >
-                      <div className="item-image">
-                        {item.images && item.images[0] ? (
-                          <img src={item.images[0]} alt={item.title} />
-                        ) : (
-                          <div className="no-image">No Image</div>
-                        )}
-                      </div>
-                      <div className="item-info">
-                        <h3>{item.title}</h3>
-                        <p className="item-category">{item.category}</p>
-                        <p className="item-condition">{item.condition}</p>
-                        <p className="item-price">${item.price.toFixed(2)}</p>
-                      </div>
-                    </Link>
+                    <div key={item.id} className="item-card">
+                      <Link
+                        to={`/item/${item.id}`}
+                        className="item-link"
+                      >
+                        <div className="item-image">
+                          {item.images && item.images[0] ? (
+                            <img src={item.images[0]} alt={item.title} />
+                          ) : (
+                            <div className="no-image">No Image</div>
+                          )}
+                        </div>
+                        <div className="item-info">
+                          <h3>{item.title}</h3>
+                          <p className="item-category">{item.category}</p>
+                          <p className="item-condition">{item.condition}</p>
+                          <p className="item-price">${item.price.toFixed(2)}</p>
+                        </div>
+                      </Link>
+                      <button
+                        className="item-add-to-cart"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleAddToCart(item.id)
+                        }}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
                   ))}
                 </div>
 

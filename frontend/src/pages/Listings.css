@@ -151,15 +151,22 @@
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 20px;
   overflow: hidden;
-  text-decoration: none;
-  color: inherit;
   transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
 }
 
 .item-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   border-color: rgba(148, 163, 184, 0.4);
+}
+
+.item-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  flex: 1;
 }
 
 .item-image {
@@ -209,7 +216,26 @@
 .item-price {
   font-size: 20px;
   font-weight: 600;
-  color: #60a5fa;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.item-add-to-cart {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+  color: #f8fafc;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.item-add-to-cart:hover {
+  background: rgba(0, 0, 0, 1);
+  border-color: rgba(148, 163, 184, 0.5);
 }
 
 .pagination {

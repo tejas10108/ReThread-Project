@@ -10,6 +10,7 @@ function ItemDetails() {
   const [item, setItem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [inWishlist, setInWishlist] = useState(false)
+  const [addingToCart, setAddingToCart] = useState(false)
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -36,6 +37,19 @@ function ItemDetails() {
     fetchItem()
     checkWishlist()
   }, [id])
+
+  const handleAddToCart = async () => {
+    setAddingToCart(true)
+    try {
+      await api.post('/cart', { productId: parseInt(id), quantity: 1 })
+      alert('Item added to cart!')
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      alert('Failed to add item to cart')
+    } finally {
+      setAddingToCart(false)
+    }
+  }
 
   const handleToggleWishlist = async () => {
     try {
@@ -103,6 +117,13 @@ function ItemDetails() {
             </div>
 
             <div className="item-actions">
+              <button
+                className="add-to-cart-btn"
+                onClick={handleAddToCart}
+                disabled={addingToCart}
+              >
+                {addingToCart ? 'Adding...' : 'Add to Cart'}
+              </button>
               <button
                 className={`wishlist-btn ${inWishlist ? 'active' : ''}`}
                 onClick={handleToggleWishlist}
